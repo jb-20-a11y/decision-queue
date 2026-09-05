@@ -52,3 +52,14 @@ class ItemSerializerTests(TestCase):
         self.assertTrue(serializer.is_valid(), serializer.errors)
         self.assertEqual(serializer.validated_data["urgency"], 5)
         self.assertEqual(serializer.validated_data["status"], 3)
+
+    def test_rejects_invalid_choice_text(self):
+        invalid_data = {
+            **self.serializer_data,
+            "urgency": "Urgent",
+            "status": "In progress",
+        }
+        serializer = ItemSerializer(data=invalid_data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(set(serializer.errors), {"urgency", "status"})
