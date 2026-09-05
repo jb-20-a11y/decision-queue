@@ -254,6 +254,7 @@ class ItemUpdateSerializerTests(TestCase):
             status_reason="Awaiting review.",
         )
         original_modified = item.date_modified
+        original_created = item.date_created
         serializer = ItemUpdateSerializer(
             instance=item,
             data={
@@ -268,5 +269,6 @@ class ItemUpdateSerializerTests(TestCase):
 
         self.assertEqual(updated_item.status, StatusChoices.ACCEPTED)
         self.assertEqual(updated_item.status_reason, "The team approved the change.")
+        self.assertEqual(updated_item.date_created, original_created)
         self.assertGreater(updated_item.date_modified, original_modified)
         self.assertEqual(serializer.data["status"], "Accepted")

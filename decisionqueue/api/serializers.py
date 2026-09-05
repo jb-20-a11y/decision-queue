@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.utils import timezone
 
 from .models import Item, StatusChoices
 
@@ -63,7 +62,3 @@ class ItemUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ("status", "status_reason")
-
-    def update(self, instance, validated_data):
-        instance.date_modified = timezone.now()
-        return super().update(instance, validated_data)

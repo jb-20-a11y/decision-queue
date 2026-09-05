@@ -22,7 +22,7 @@ class StatusChoices(models.IntegerChoices):
     DECLINED = 4, "Declined"
 
 class Item(models.Model):
-    date_created = models.DateTimeField(auto_now=True)
+    date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
     title = models.CharField(max_length=100)
     problem_statement = models.TextField()
