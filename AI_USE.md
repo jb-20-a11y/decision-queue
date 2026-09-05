@@ -14,11 +14,14 @@ Repeat this section for each AI tool.
   - Drafted the `expected_impact` integer-choice field on `Item` and migration `0002_item_expected_impact.py`.
   - Drafted and repeatedly revised tests (serializer round-trips, create/update behavior, ordering, filtering, pagination) as the API contract and fixtures evolved.
   - Applied indentation fixes (tabs → four spaces) when asked.
+  - Changed `date_created` to `auto_now_add=True` (with migration `0003`), dropped the custom `ItemUpdateSerializer.update()` override so `date_modified` is handled only by the model’s `auto_now=True`, and updated tests to assert created is stable and modified advances.
+- Rejected AI update paths that double-saved or manually assigned `date_modified`. After correcting the model (`date_created=auto_now_add`, `date_modified=auto_now`), directed Copilot to drop the custom `update()` override entirely so Django’s field behavior alone advances modified time; confirmed tests assert created unchanged and modified advances.
 
 - **Intermediate artifacts generated through AI use:**
   - Views that initially inlined serializer logic (before serializers lived in `serializers.py`).
   - Mixed choice contract: only `ItemSerializer` used `IntegerChoiceField`; list/create/update still used native integer fields.
-  - Update implementation that called `save()` twice (later replaced).
+- Update implementations that called `save()` twice, then that set `date_modified` manually before `super().update(...)` (later removed entirely once `auto_now` / `auto_now_add` on the model were correct).
+  - `date_created` originally `auto_now=True` (advanced on every save); corrected to `auto_now_add=True` plus migration `0003`.
   - Test fixtures/assertions that assumed integer inputs/outputs for create/update while those serializers expected (or later returned) labels—and the reverse during the unification pass.
   - Invalid-status test that indexed `response.data["status"][0]` (DRF returns a plain string for that error).
   - Update test that asserted `date_created` was unchanged (false under `auto_now=True`).
@@ -67,13 +70,13 @@ class IntegerChoiceField(serializers.IntegerField):
 ### Grok.com
 
 - **Tasks the tool assisted:**
-  - Generating the VS Code AI section in this file using the exported JSON transcripts
+  - Drafting and refining `AI_USE.md` from exported VS Code chat JSON transcripts; drafting `README.md` / submission checklist wording from the exercise brief and project state.
 
 - **Intermediate artifacts generated through AI use:**
-  - N/A
+  - Iterative `AI_USE.md` and `README.md` drafts (not application source).
 
-- **Important output checked or changed:** [Describe what you reviewed, tested, corrected, rejected, or rewrote.]
-  - N/A
+- **Important output checked or changed:**
+  - Reviewed and edited all suggested doc text for accuracy (attribution of code changes, env/setup commands, decisions, gaps) before committing.
 
 ## Final review
 
