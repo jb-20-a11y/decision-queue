@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: always
+    env_file: decisionqueue/db.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  django-container:
+    build: ./decisionqueue
+    image: decision-queue-django
+    command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      DB_HOST: db
+    env_file:
+      - decisionqueue/db.env
+      - decisionqueue/django.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

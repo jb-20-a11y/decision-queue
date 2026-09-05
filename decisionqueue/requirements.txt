@@ -1,3 +1,6 @@
-django
-djangorestframework
-psycopg2-binary
+asgiref==3.12.1
+Django==5.2.17
+djangorestframework==3.18.0
+psycopg2-binary==2.9.12
+sqlparse==0.6.0
+tzdata==2026.3
