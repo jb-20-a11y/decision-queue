@@ -55,7 +55,8 @@ TIME_LIMIT_SECONDS = 60 * 60 * 6  # 6 hours
 # `line_prefix + <formatted total>`. Everything else in the file, and the
 # prefix text itself, is left untouched.
 FILES_TO_UPDATE = {
-    "README.md": "**Total Time:** ",
+    "README.MD": "**Total Time:** ",
+   "SUBMISSION.md": "- [ ] **Total time: "
 }
 
 # {h} and {m} are replaced with rounded whole hours and minutes.
