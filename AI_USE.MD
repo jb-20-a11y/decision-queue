@@ -6,9 +6,38 @@ Complete this file before submission. If a section does not apply, write `None`.
 
 Repeat this section for each AI tool.
 
-### [Tool name]
+### GitHub Copilot (VS Code)
+
+- **Tasks the tool assisted:**
+  - Drafted Django REST Framework views for listing/creating queue items (status filtering, primary-key or urgency ordering, page-size-50 pagination) and for updating item status/reason.
+  - Drafted a custom `IntegerChoiceField` (labels ↔ stored integers), first on `ItemSerializer`, then—on request—extended the same field to list/create/update serializers so the API consistently uses labels in JSON.
+  - Drafted the `expected_impact` integer-choice field on `Item` and migration `0002_item_expected_impact.py`.
+  - Drafted and repeatedly revised tests (serializer round-trips, create/update behavior, ordering, filtering, pagination) as the API contract and fixtures evolved.
+  - Applied indentation fixes (tabs → four spaces) when asked.
+
+- **Intermediate artifacts generated through AI use:**
+  - Views that initially inlined serializer logic (before serializers lived in `serializers.py`).
+  - Mixed choice contract: only `ItemSerializer` used `IntegerChoiceField`; list/create/update still used native integer fields.
+  - Update implementation that called `save()` twice (later replaced).
+  - Test fixtures/assertions that assumed integer inputs/outputs for create/update while those serializers expected (or later returned) labels—and the reverse during the unification pass.
+  - Invalid-status test that indexed `response.data["status"][0]` (DRF returns a plain string for that error).
+  - Update test that asserted `date_created` was unchanged (false under `auto_now=True`).
+  - Tab-indented `views.py` / `urls.py`.
+  - Successive revisions of serializers, tests (including `api_item_payload`), `ItemPagination`, URL routes, and the migration—each built on the previous AI draft rather than written from scratch.
+
+- **Important output checked or changed:**
+  - Moved serializers into `serializers.py` myself; directed Copilot only to rewire views and drop redundant defaults.
+  - Removed an explicit blank default for `status_reason` myself after confirming the model already allows it.
+  - Replaced the AI’s double-`save()` update with a single `instance.date_modified = ...; return super().update(...)` myself; required four-space indentation and rejected tab-indented output.
+  - After pasting failing suite output: fixed create/update fixtures when they disagreed with the then-current integer contract; fixed the invalid-status assertion to expect a plain string, not a list; dropped the invalid `date_created`-unchanged assertion.
+  - Requested that list/create/update adopt the same label ↔ integer mapping as `ItemSerializer`; reviewed the resulting serializer edits, the new `api_item_payload` helper, and label-based response assertions; confirmed 13/13 green with no view logic changes needed.
+  - Verified POST-only update, pagination, urgency ordering, status filtering, and Pending-on-create; re-ran the suite until clean.
+
+### Google Search AI Response
 
 - **Tasks the tool assisted:** [Describe the tasks.]
+  - This was web search with the occasional direct Google code snippet output. As part of searching for a built-in Django feature to get the desired serializer behavior (for both read and write) going between integer rank values and strings, Google provided a snippet for a customer class for that behavior.
+
 - **Intermediate artifacts generated through AI use:** [List generated plans, drafts, code, tests, or other artifacts.]
 
 ```
@@ -33,11 +62,23 @@ class IntegerChoiceField(serializers.IntegerField):
 ```
 
 - **Important output checked or changed:** [Describe what you reviewed, tested, corrected, rejected, or rewrote.]
+  - Removed the fallback to number inputs as that is not part of the intended API contract.
+
+### Grok.com
+
+- **Tasks the tool assisted:**
+  - Generating the VS Code AI section in this file using the exported JSON transcripts
+
+- **Intermediate artifacts generated through AI use:**
+  - N/A
+
+- **Important output checked or changed:** [Describe what you reviewed, tested, corrected, rejected, or rewrote.]
+  - N/A
 
 ## Final review
 
-- [ ] I understand the important AI-assisted work in this repository.
-- [ ] I checked or changed important AI output before submission.
-- [ ] I did not include private or proprietary information in this file.
+- [x] I understand the important AI-assisted work in this repository.
+- [x] I checked or changed important AI output before submission.
+- [x] I did not include private or proprietary information in this file.
 
 Do not include full prompt transcripts. They can contain personal, account, private, or proprietary information.

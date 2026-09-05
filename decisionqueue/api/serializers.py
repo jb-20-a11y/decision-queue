@@ -28,6 +28,10 @@ class ItemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ItemListSerializer(serializers.ModelSerializer):
+    urgency = IntegerChoiceField(choices=Item._meta.get_field('urgency').choices)
+    status = IntegerChoiceField(choices=Item._meta.get_field('status').choices)
+    expected_impact = IntegerChoiceField(choices=Item._meta.get_field('expected_impact').choices)
+
     class Meta:
         model = Item
         fields = (
@@ -41,6 +45,9 @@ class ItemListSerializer(serializers.ModelSerializer):
 
 
 class ItemCreateSerializer(serializers.ModelSerializer):
+    urgency = IntegerChoiceField(choices=Item._meta.get_field('urgency').choices)
+    expected_impact = IntegerChoiceField(choices=Item._meta.get_field('expected_impact').choices)
+
     class Meta:
         model = Item
         fields = ("title", "problem_statement", "urgency", "expected_impact")
@@ -51,6 +58,8 @@ class ItemCreateSerializer(serializers.ModelSerializer):
 
 
 class ItemUpdateSerializer(serializers.ModelSerializer):
+    status = IntegerChoiceField(choices=Item._meta.get_field('status').choices)
+
     class Meta:
         model = Item
         fields = ("status", "status_reason")

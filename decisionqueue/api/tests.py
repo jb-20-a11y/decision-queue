@@ -19,8 +19,18 @@ class ItemViewTests(APITestCase):
             "expected_impact": 5,
         }
 
+    def api_item_payload(self, title="Improve onboarding", urgency="High"):
+        return {
+            "title": title,
+            "problem_statement": "New users are unsure what to do first.",
+            "urgency": urgency,
+            "expected_impact": "Highest",
+        }
+
     def test_create_item(self):
-        response = self.client.post(self.items_url, self.item_payload(), format="json")
+        response = self.client.post(
+            self.items_url, self.api_item_payload(), format="json"
+        )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Item.objects.count(), 1)
@@ -31,8 +41,8 @@ class ItemViewTests(APITestCase):
         self.assertEqual(item.status, StatusChoices.PENDING)
         self.assertEqual(response.data["title"], item.title)
         self.assertEqual(response.data["problem_statement"], item.problem_statement)
-        self.assertEqual(response.data["urgency"], item.urgency)
-        self.assertEqual(response.data["expected_impact"], item.expected_impact)
+        self.assertEqual(response.data["urgency"], "High")
+        self.assertEqual(response.data["expected_impact"], "Highest")
 
     def test_update_item(self):
         item = Item.objects.create(
@@ -43,7 +53,7 @@ class ItemViewTests(APITestCase):
 
         response = self.client.post(
             f"{self.items_url}{item.pk}/",
-            {"status": StatusChoices.ACCEPTED, "status_reason": "Approved."},
+            {"status": "Accepted", "status_reason": "Approved."},
             format="json",
         )
 
@@ -51,7 +61,7 @@ class ItemViewTests(APITestCase):
         item.refresh_from_db()
         self.assertEqual(item.status, StatusChoices.ACCEPTED)
         self.assertEqual(item.status_reason, "Approved.")
-        self.assertEqual(response.data["status"], StatusChoices.ACCEPTED)
+        self.assertEqual(response.data["status"], "Accepted")
         self.assertEqual(response.data["status_reason"], "Approved.")
 
     def test_list_orders_items_by_primary_key_by_default(self):
@@ -67,6 +77,18 @@ class ItemViewTests(APITestCase):
         response = self.client.get(self.items_url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            [item["urgency"] for item in response.data["results"]],
+            ["Highest", "Lowest", "Medium"],
+        )
+        self.assertEqual(
+            [item["expected_impact"] for item in response.data["results"]],
+            ["Highest", "Highest", "Highest"],
+        )
+        self.assertEqual(
+            [item["status"] for item in response.data["results"]],
+            ["Pending", "Pending", "Pending"],
+        )
         self.assertEqual(
             [item["title"] for item in response.data["results"]],
             [item.title for item in created_items],
@@ -208,8 +230,8 @@ class ItemCreateSerializerTests(TestCase):
             data={
                 "title": "Improve onboarding",
                 "problem_statement": "New users are unsure what to do first.",
-                "urgency": 4,
-                "expected_impact": 5,
+                "urgency": "High",
+                "expected_impact": "Highest",
             }
         )
 
@@ -217,6 +239,8 @@ class ItemCreateSerializerTests(TestCase):
         item = serializer.save()
 
         self.assertEqual(item.status, StatusChoices.PENDING)
+        self.assertEqual(serializer.data["urgency"], "High")
+        self.assertEqual(serializer.data["expected_impact"], "Highest")
 
 
 class ItemUpdateSerializerTests(TestCase):
@@ -233,7 +257,7 @@ class ItemUpdateSerializerTests(TestCase):
         serializer = ItemUpdateSerializer(
             instance=item,
             data={
-                "status": 3,
+                "status": "Accepted",
                 "status_reason": "The team approved the change.",
             },
         )
@@ -245,3 +269,4 @@ class ItemUpdateSerializerTests(TestCase):
         self.assertEqual(updated_item.status, StatusChoices.ACCEPTED)
         self.assertEqual(updated_item.status_reason, "The team approved the change.")
         self.assertGreater(updated_item.date_modified, original_modified)
+        self.assertEqual(serializer.data["status"], "Accepted")
