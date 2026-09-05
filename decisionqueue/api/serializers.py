@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import Item
+from django.utils import timezone
+
+from .models import Item, StatusChoices
 
 class IntegerChoiceField(serializers.IntegerField):
     def __init__(self, choices, *args, **kwargs):
@@ -25,3 +27,34 @@ class ItemSerializer(serializers.ModelSerializer):
         model = Item
         fields = '__all__'
 
+class ItemListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = (
+            "title",
+            "expected_impact",
+            "urgency",
+            "status",
+            "date_created",
+            "date_modified",
+        )
+
+
+class ItemCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = ("title", "problem_statement", "urgency", "expected_impact")
+
+    def create(self, validated_data):
+        validated_data["status"] = StatusChoices.PENDING
+        return super().create(validated_data)
+
+
+class ItemUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = ("status", "status_reason")
+
+    def update(self, instance, validated_data):
+        instance.date_modified = timezone.now()
+        return super().update(instance, validated_data)

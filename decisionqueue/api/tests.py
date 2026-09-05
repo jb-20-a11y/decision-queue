@@ -1,7 +1,7 @@
 from django.test import TestCase
 
-from .models import Item
-from .serializers import ItemSerializer
+from .models import Item, StatusChoices
+from .serializers import ItemCreateSerializer, ItemSerializer, ItemUpdateSerializer
 
 
 class ItemSerializerTests(TestCase):
@@ -71,3 +71,48 @@ class ItemSerializerTests(TestCase):
         self.assertEqual(
             set(serializer.errors), {"urgency", "expected_impact", "status"}
         )
+
+
+class ItemCreateSerializerTests(TestCase):
+    def test_create_sets_status_to_pending(self):
+        serializer = ItemCreateSerializer(
+            data={
+                "title": "Improve onboarding",
+                "problem_statement": "New users are unsure what to do first.",
+                "urgency": 4,
+                "expected_impact": 5,
+            }
+        )
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        item = serializer.save()
+
+        self.assertEqual(item.status, StatusChoices.PENDING)
+
+
+class ItemUpdateSerializerTests(TestCase):
+    def test_update_changes_date_modified(self):
+        item = Item.objects.create(
+            title="Improve onboarding",
+            problem_statement="New users are unsure what to do first.",
+            urgency=4,
+            expected_impact=5,
+            status=StatusChoices.PENDING,
+            status_reason="Awaiting review.",
+        )
+        original_modified = item.date_modified
+        serializer = ItemUpdateSerializer(
+            instance=item,
+            data={
+                "status": 3,
+                "status_reason": "The team approved the change.",
+            },
+        )
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        updated_item = serializer.save()
+        updated_item.refresh_from_db()
+
+        self.assertEqual(updated_item.status, StatusChoices.ACCEPTED)
+        self.assertEqual(updated_item.status_reason, "The team approved the change.")
+        self.assertGreater(updated_item.date_modified, original_modified)
