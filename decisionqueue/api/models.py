@@ -7,6 +7,13 @@ class UrgencyChoices(models.IntegerChoices):
     HIGH = 4, "High"
     HIGHEST = 5, "Highest"
 
+class ExpectedImpactChoices(models.IntegerChoices):
+    LOWEST = 1, "Lowest"
+    LOW = 2, "Low"
+    MEDIUM = 3, "Medium"
+    HIGH = 4, "High"
+    HIGHEST = 5, "Highest"
+
 
 class StatusChoices(models.IntegerChoices):
     PENDING = 1, "Pending"
@@ -20,6 +27,7 @@ class Item(models.Model):
     title = models.CharField(max_length=100)
     problem_statement = models.TextField()
     urgency = models.IntegerField(choices=UrgencyChoices.choices)
+    expected_impact = models.IntegerField(choices=ExpectedImpactChoices.choices)
     status = models.IntegerField(choices=StatusChoices.choices)
     status_reason = models.TextField()
 

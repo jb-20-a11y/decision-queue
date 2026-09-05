@@ -10,6 +10,7 @@ class ItemSerializerTests(TestCase):
             "title": "Improve onboarding",
             "problem_statement": "New users are unsure what to do first.",
             "urgency": 4,
+            "expected_impact": 5,
             "status": 1,
             "status_reason": "Awaiting review.",
         }
@@ -17,6 +18,7 @@ class ItemSerializerTests(TestCase):
             "title": "Improve onboarding",
             "problem_statement": "New users are unsure what to do first.",
             "urgency": "Highest",
+            "expected_impact": "Low",
             "status": "Accepted",
             "status_reason": "The team approved the change.",
         }
@@ -35,6 +37,7 @@ class ItemSerializerTests(TestCase):
                 "title",
                 "problem_statement",
                 "urgency",
+                "expected_impact",
                 "status",
                 "status_reason",
             },
@@ -44,6 +47,7 @@ class ItemSerializerTests(TestCase):
         data = self.serializer.data
 
         self.assertEqual(data["urgency"], "High")
+        self.assertEqual(data["expected_impact"], "Highest")
         self.assertEqual(data["status"], "Pending")
 
     def test_deserializes_choice_text_as_integers(self):
@@ -51,15 +55,19 @@ class ItemSerializerTests(TestCase):
 
         self.assertTrue(serializer.is_valid(), serializer.errors)
         self.assertEqual(serializer.validated_data["urgency"], 5)
+        self.assertEqual(serializer.validated_data["expected_impact"], 2)
         self.assertEqual(serializer.validated_data["status"], 3)
 
     def test_rejects_invalid_choice_text(self):
         invalid_data = {
             **self.serializer_data,
             "urgency": "Urgent",
+            "expected_impact": "Critical",
             "status": "In progress",
         }
         serializer = ItemSerializer(data=invalid_data)
 
         self.assertFalse(serializer.is_valid())
-        self.assertEqual(set(serializer.errors), {"urgency", "status"})
+        self.assertEqual(
+            set(serializer.errors), {"urgency", "expected_impact", "status"}
+        )

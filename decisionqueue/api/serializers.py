@@ -20,6 +20,7 @@ class IntegerChoiceField(serializers.IntegerField):
 class ItemSerializer(serializers.ModelSerializer):
     urgency = IntegerChoiceField(choices=Item._meta.get_field('urgency').choices)
     status = IntegerChoiceField(choices=Item._meta.get_field('status').choices)
+    expected_impact = IntegerChoiceField(choices=Item._meta.get_field('expected_impact').choices)
     class Meta:
         model = Item
         fields = '__all__'
